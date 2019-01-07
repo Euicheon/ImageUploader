@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -16,6 +18,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import org.apache.commons.io.FilenameUtils;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
+import com.bumptech.glide.RequestManager;
 import com.example.q.imageuploader.R;
 import com.google.gson.Gson;
 import com.koushikdutta.async.future.FutureCallback;
@@ -29,6 +34,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -95,6 +101,8 @@ public class MainActivity extends Activity {
                 file_name = f.getName();
                 Log.d("file name is", file_name);
                 // 파일이름 : file_name
+
+                // 보낼 데이터를 Json 파일로 만들기
                 try {
                     json.put("value",file_name);
                     json.put("propName","photo");
@@ -103,25 +111,10 @@ public class MainActivity extends Activity {
                     e.printStackTrace();
                 }
 
-/*
                 try {
-                    HttpPatch request = new HttpPatch("http://143.248.140.106:2580/members/15");
-                    StringEntity params = new StringEntity(json.toString());
-                    request.addHeader("content-type","application/json");
-                    request.addHeader("Accept","application/json");
-                    request.setEntity(params);
-                    HttpResponse response = httpClient.execute(request);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                */
-                try {
+                    //http에 넣을 수 있는 형식으로 만들기
                     StringEntity json_string = new StringEntity(linkerList.toString());
-
-
-
-                    // new httpRequsetClass().execute(json_string);
-                    //httpRequsetClass mHttpRequestClass = new httpRequsetClass(json_string);
+                    //httprequestclass 로 보내서 실행시키기
                     new httpRequsetClass(json_string).execute();
 
                 } catch (Exception e) {
@@ -164,9 +157,31 @@ public class MainActivity extends Activity {
             }
         });
         getimg.setOnClickListener(new View.OnClickListener() {
+            Bitmap bitmap;
+            String url;
             @Override
             public void onClick(View v) {
-
+                /*try {
+                    Log.d("GET", "is now loading");
+                    url = "http://143.248.140.106:2980/uploads" + "/"+ "movie-dictators-02.jpg";
+                    //String url = new StringEntity(linkerList.toString());
+                    bitmap = new getImageBackground(url).doInBackground();
+                    //gottenimg.setImageBitmap(bitmap);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }*/
+                String imageUrl = "http://143.248.140.106:2980/uploads" + "/"+ "movie-dictators-02.jpg";
+                ImageAdapter imageAdapter = new ImageAdapter(getApplicationContext(),url);
+                //ImageView imageView = (ImageView) findViewById(R.id.full_image_view);
+                //ImageView imageView = new ImageView(this);
+                RequestManager requestManager = Glide.with(imageAdapter.getContext());
+                // Create request builder and load image.
+                RequestBuilder requestBuilder = requestManager.load(imageUrl);
+                //requestBuilder = requestBuilder.apply(new RequestOptions().override(250, 250));
+                // Show image into target imageview.
+                requestBuilder.into(gottenimg);
+                gottenimg.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                //images.add(gottenimg);
             }
         });
     }
